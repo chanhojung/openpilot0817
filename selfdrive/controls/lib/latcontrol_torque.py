@@ -65,7 +65,7 @@ class LatControlTorque(LatControl):
     self.torque_params.latAccelOffset = latAccelOffset
     self.torque_params.friction = friction
 
-  def update(self, active, CS, CP, VM, params, last_actuators, desired_curvature, desired_curvature_rate, llk):
+  def update(self, active, CS, CP, VM, params, last_actuators, steer_limited, desired_curvature, desired_curvature_rate, llk):
     self.lt_timer += 1
     if self.lt_timer > 100:
       self.lt_timer = 0
@@ -105,7 +105,7 @@ class LatControlTorque(LatControl):
                                           desired_lateral_accel - actual_lateral_accel,
                                           lateral_accel_deadzone, friction_compensation=True)
 
-      freeze_integrator = CS.steeringRateLimited or CS.steeringPressed or CS.vEgo < 5
+      freeze_integrator = steer_limited or CS.steeringPressed or CS.vEgo < 5
       output_torque = self.pid.update(error,
                                       feedforward=ff,
                                       speed=CS.vEgo,
