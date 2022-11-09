@@ -148,6 +148,7 @@ typedef struct UIScene {
   mat3 view_from_calib;
   bool world_objects_visible;
 
+  std::string alertTextMsg0;
   std::string alertTextMsg1;
   std::string alertTextMsg2;
   std::string alertTextMsg3;

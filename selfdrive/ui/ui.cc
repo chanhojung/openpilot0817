@@ -174,6 +174,7 @@ static void update_state(UIState *s) {
       scene.multi_lat_selected = scene.controls_state.getLateralControlState().getAtomState().getSelected();
     }
 
+    scene.alertTextMsg0 = scene.controls_state.getAlertTextMsg0(); //debug0
     scene.alertTextMsg1 = scene.controls_state.getAlertTextMsg1(); //debug1
     scene.alertTextMsg2 = scene.controls_state.getAlertTextMsg2(); //debug2
     scene.alertTextMsg3 = scene.controls_state.getAlertTextMsg3(); //debug3
