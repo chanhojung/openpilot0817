@@ -348,7 +348,7 @@ static void ui_draw_standstill(UIState *s) {
   int viz_standstill_x = s->fb_w/2;
   int viz_standstill_y = bdr_s + 160 + 250 + 100;
   
-  int minute = 0;ui_draw_debug
+  int minute = 0;
   int second = 0;
 
   minute = int(scene.lateralPlan.standstillElapsedTime / 60);
@@ -793,7 +793,7 @@ static void ui_draw_vision_speed(UIState *s) {
     val_color = nvgRGBA((255-int(gas_opacity)), (255-int((act_accel*10))), (255-int(gas_opacity)), 255);
   }
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, s->fb_w/2, 210+(s->scene.animated_rpm?35:0), speed_str.c_str(), 96 * 2.5, val_color, "saui_draw_gearbold");
+  ui_draw_text(s, s->fb_w/2, 210+(s->scene.animated_rpm?35:0), speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
   if (!s->scene.animated_rpm) {
     ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, scene.brakeLights?nvgRGBA(201, 34, 49, 100):COLOR_WHITE_ALPHA(200), "sans-regular");
   }
@@ -1555,7 +1555,6 @@ static void ui_draw_vision_header(UIState *s) {
     } else if (s->scene.navi_select == 3 && s->scene.mapSign != 21) {
       draw_safetysign(s);
     }
-    draw_compass(s);
     if (s->scene.navi_select == 0 || s->scene.navi_select == 1 || s->scene.navi_select == 2 || s->scene.navi_select == 3 || s->scene.mapbox_running) {
       draw_navi_button(s);
     }
