@@ -379,6 +379,7 @@ static void ui_draw_debug(UIState *s) {
   int ui_viz_rx = bdr_s + 190;
   int ui_viz_ry = bdr_s + 100;
   int ui_viz_rx_center = s->fb_w/2;
+  int debug_y0 = ui_viz_ry+720+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
   int debug_y1 = ui_viz_ry+760+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
   int debug_y2 = ui_viz_ry+800+(scene.mapbox_running ? 3:0)-(scene.animated_rpm?60:0);
   int debug_y3 = ui_viz_ry+720+(scene.mapbox_running ? 18:0)-(scene.animated_rpm?60:0);
@@ -386,6 +387,7 @@ static void ui_draw_debug(UIState *s) {
   nvgTextAlign(s->vg, NVG_ALIGN_MIDDLE | NVG_ALIGN_MIDDLE);
 
   if (scene.nDebugUi1) {
+    ui_draw_text(s, ui_viz_rx, debug_y0, scene.alertTextMsg0.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
     ui_draw_text(s, ui_viz_rx, debug_y1, scene.alertTextMsg1.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
     ui_draw_text(s, ui_viz_rx, debug_y2, scene.alertTextMsg2.c_str(), scene.mapbox_running?34:45, COLOR_WHITE_ALPHA(125), "sans-semibold");
   }

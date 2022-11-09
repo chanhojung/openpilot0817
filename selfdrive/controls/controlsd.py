@@ -688,10 +688,9 @@ class Controls:
       torque_params = self.sm['liveTorqueParameters']
       if self.sm.all_checks(['liveTorqueParameters']) and torque_params.useParams:
         self.LaC.update_live_torque_params(torque_params.latAccelFactorFiltered, torque_params.latAccelOffsetFiltered, torque_params.frictionCoefficientFiltered)
-        self.log1 = 'LiveTorque[{:.0f}]: {:.3f},{:.3f},{:.3f}'.format(torque_params.totalBucketPoints, torque_params.latAccelFactorFiltered, torque_params.latAccelOffsetFiltered, torque_params.frictionCoefficientFiltered)
-        print(self.log1)
+        self.log1 = 'LiveTorque[BP{:.0f}]: LAF{:.3f},LAO{:.3f},FC{:.3f}'.format(torque_params.totalBucketPoints, torque_params.latAccelFactorFiltered, torque_params.latAccelOffsetFiltered, torque_params.frictionCoefficientFiltered)
+        trace1.printf0( '{}'.format(self.log1) )
         #str_log1 = 'LV={:.0f} LAF={:.2f} FC={:.3f} LAO={:.3f} LAG={}'.format( torque_params.liveValid, torque_params.latAccelFactorFiltered, torque_params.frictionCoefficientFiltered, torque_params.latAccelOffsetFiltered, self.rk._debug_dt )
-
 
     self.steerRatio_to_send = sr
 
@@ -781,6 +780,7 @@ class Controls:
   def publish_logs(self, CS, start_time, actuators, lac_log):
     """Send actuators and hud commands to the car, send controlsstate and MPC logging"""
 
+    self.log_alertTextMsg0 = trace1.global_alertTextMsg0
     self.log_alertTextMsg1 = trace1.global_alertTextMsg1
     self.log_alertTextMsg2 = trace1.global_alertTextMsg2
     self.log_alertTextMsg3 = trace1.global_alertTextMsg3
@@ -929,6 +929,7 @@ class Controls:
     controlsState.startMonoTime = int(start_time * 1e9)
     controlsState.forceDecel = bool(force_decel)
     controlsState.canErrorCounter = self.can_rcv_error_counter
+    controlsState.alertTextMsg0 = self.log_alertTextMsg0
     controlsState.alertTextMsg1 = self.log_alertTextMsg1
     controlsState.alertTextMsg2 = self.log_alertTextMsg2
     controlsState.alertTextMsg3 = self.log_alertTextMsg3
