@@ -557,7 +557,7 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
       tr(69),
       tr(70),
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 1.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 0.1),
   },
 
   # Thrown when the fan is driven at >50% but is not rotating
@@ -729,7 +729,7 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
       tr(98),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.engage, .5),
+      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, 1.0),
   },
 
   EventName.curvSpeedDown: {
