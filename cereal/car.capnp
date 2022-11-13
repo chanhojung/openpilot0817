@@ -442,6 +442,8 @@ struct CarControl {
       promptRepeat @7;
       promptDistracted @8;
       warning @9;
+
+      resCruise @10;
     }
   }
 
