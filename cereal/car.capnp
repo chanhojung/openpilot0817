@@ -443,7 +443,7 @@ struct CarControl {
       promptDistracted @8;
       warning @9;
 
-      rescruise @10;
+      resCruise @10;
     }
   }
 
