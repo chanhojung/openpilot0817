@@ -203,6 +203,14 @@ VectorXd Localizer::get_stdev() {
   return this->kf->get_P().diagonal().array().sqrt();
 }
 
+bool Localizer::are_inputs_ok() {
+  return this->critical_services_valid(this->observation_values_invalid) && !this->observation_timings_invalid;
+}
+
+void Localizer::observation_timings_invalid_reset(){
+  this->observation_timings_invalid = false;
+}
+
 void Localizer::handle_sensors(double current_time, const capnp::List<cereal::SensorEventData, capnp::Kind::STRUCT>::Reader& log) {
   // TODO does not yet account for double sensor readings in the log
   for (int i = 0; i < log.size(); i++) {
@@ -221,7 +229,7 @@ void Localizer::handle_sensors(double current_time, const capnp::List<cereal::Se
       this->observation_timings_invalid = true;
       return;
     }
-    else if (!this->is_timestamp_valid(sensor_time, this->kf->get_filter_time())) {
+    else if (!this->is_timestamp_valid(sensor_time)) {
       this->observation_timings_invalid = true;
       return;
     }
@@ -348,7 +356,7 @@ void Localizer::handle_cam_odo(double current_time, const cereal::CameraOdometry
   VectorXd rot_device = this->device_from_calib * floatlist2vector(log.getRot());
   VectorXd trans_device = this->device_from_calib * floatlist2vector(log.getTrans());
 
-  if (!this->is_timestamp_valid(current_time, this->kf->get_filter_time())) {
+  if (!this->is_timestamp_valid(current_time)) {
     this->observation_timings_invalid = true;
     return;
   }
@@ -387,7 +395,7 @@ void Localizer::handle_cam_odo(double current_time, const cereal::CameraOdometry
 }
 
 void Localizer::handle_live_calib(double current_time, const cereal::LiveCalibrationData::Reader& log) {
-  if (!this->is_timestamp_valid(current_time, this->kf->get_filter_time())) {
+  if (!this->is_timestamp_valid(current_time)) {
     this->observation_timings_invalid = true;
     return;
   }
@@ -435,7 +443,7 @@ void Localizer::time_check(double current_time) {
 
 void Localizer::update_reset_tracker() {
   // reset tracker is tuned to trigger when over 1reset/10s over 2min period
-  if (this->isGpsOK()) {
+  if (this->is_gps_ok()) {
     this->reset_tracker *= DECAY;
   } else {
     this->reset_tracker = 0.0;
@@ -510,7 +518,7 @@ kj::ArrayPtr<capnp::byte> Localizer::get_message_bytes(MessageBuilder& msg_build
 }
 
 
-bool Localizer::isGpsOK() {
+bool Localizer::is_gps_ok() {
   return this->kf->get_filter_time() - this->last_gps_fix < 1.0;
 }
 
@@ -523,8 +531,8 @@ bool Localizer::critical_services_valid(std::map<std::string, double> critical_s
   return true;
 }
 
-
-bool Localizer::is_timestamp_valid(double current_time, double filter_time) {  
+bool Localizer::is_timestamp_valid(double current_time) {  
+  double filter_time = this->kf->get_filter_time();
   if (!std::isnan(filter_time) && ((filter_time - current_time) > MAX_FILTER_REWIND_TIME)) {
     LOGE("Observation timestamp is older than the max rewind threshold of the filter");
     return false;
@@ -564,7 +572,7 @@ int Localizer::locationd_thread() {
   while (!do_exit) {
     sm.update();
     if (filterInitialized){
-      this->observation_timings_invalid = false;
+      this->observation_timings_invalid_reset();
       for (const char* service : service_list) {
         if (sm.updated(service)){
           const cereal::Event::Reader log = sm[service];
@@ -577,9 +585,9 @@ int Localizer::locationd_thread() {
     
     if (sm.updated("cameraOdometry")) {
       uint64_t logMonoTime = sm["cameraOdometry"].getLogMonoTime();
-      bool inputsOK = sm.allAliveAndValid() && this->critical_services_valid(this->observation_values_invalid) && !this->observation_timings_invalid;
-      bool sensorsOK = sm.alive("sensorEvents") && sm.valid("sensorEvents");
-      bool gpsOK = this->isGpsOK();
+      bool inputsOK = sm.allAliveAndValid() && this->are_inputs_ok();
+      bool gpsOK = this->is_gps_ok();
+      bool sensorsOK = sm.allAliveAndValid({"accelerometer", "gyroscope"});
 
       MessageBuilder msg_builder;
       kj::ArrayPtr<capnp::byte> bytes = this->get_message_bytes(msg_builder, logMonoTime, inputsOK, sensorsOK, gpsOK, filterInitialized);
