@@ -265,6 +265,7 @@ typedef struct UIScene {
   bool run_ext_navi = false;  
   int do_not_disturb_mode;
   bool depart_chime_at_resume;
+  int comma_stock_ui;
 
   cereal::DeviceState::Reader deviceState;
   cereal::CarState::Reader car_state;
