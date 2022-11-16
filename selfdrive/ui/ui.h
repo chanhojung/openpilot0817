@@ -209,7 +209,7 @@ typedef struct UIScene {
   int recording_quality;
   bool monitoring_mode;
   bool forceGearD;
-  bool comma_stock_ui, opkr_livetune_ui;
+  bool opkr_livetune_ui;
   bool driving_record;
   float steer_actuator_delay;
   bool batt_less;
@@ -262,7 +262,9 @@ typedef struct UIScene {
   int gear_step;
   float charge_meter;
   float multi_lat_selected;
-  bool run_ext_navi = false;
+  bool run_ext_navi = false;  
+  int do_not_disturb_mode;
+  bool depart_chime_at_resume;
 
   cereal::DeviceState::Reader deviceState;
   cereal::CarState::Reader car_state;

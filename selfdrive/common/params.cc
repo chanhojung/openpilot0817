@@ -390,6 +390,8 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"OPKREarlyStop", PERSISTENT},
     {"ExternalDeviceIP", PERSISTENT},
     {"ExternalDeviceIPNow", CLEAR_ON_MANAGER_START},
+    {"DoNotDisturbMode", PERSISTENT},
+    {"DepartChimeAtResume", PERSISTENT},
 };
 
 } // namespace

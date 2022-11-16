@@ -356,8 +356,8 @@ class CarInterface(CarInterfaceBase):
         events.add(EventName.brakeHold)
       if self.CC.auto_res_starting:
         events.add(EventName.resCruise)
-      # if self.CS.brakePressed: # too often, little noisy
-      #   events.add(EventName.prompt)        
+      if self.CC.e2e_standstill:
+        events.add(EventName.chimeAtResume)
     if self.CS.cruiseState_standstill or self.CC.standstill_status == 1:
       #events.add(EventName.standStill)
       self.CP.standStill = True

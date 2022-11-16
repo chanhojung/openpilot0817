@@ -208,6 +208,14 @@ class CarController():
     self.try_early_stop_retrieve = False
     self.try_early_stop_org_gap = 4.0
 
+    self.ed_rd_diff_on = False
+    self.ed_rd_diff_on_timer = 0
+
+    self.e2e_standstill_enable = self.params.get_bool("DepartChimeAtResume")
+    self.e2e_standstill = False
+    self.e2e_standstill_stat = False
+    self.e2e_standstill_timer = 0
+
     self.str_log2 = 'MultiLateral'
     if CP.lateralTuning.which() == 'pid':
       self.str_log2 = 'T={:0.2f}/{:0.3f}/{:0.2f}/{:0.5f}'.format(CP.lateralTuning.pid.kpV[1], CP.lateralTuning.pid.kiV[1], CP.lateralTuning.pid.kdV[0], CP.lateralTuning.pid.kf)
@@ -673,6 +681,22 @@ class CarController():
           self.auto_res_limit_timer += 1
         if self.auto_res_delay_timer < self.auto_res_delay:
           self.auto_res_delay_timer += 1
+      if self.e2e_standstill_enable:
+        if self.e2e_standstill:
+          self.e2e_standstill_timer += 1
+          self.e2e_standstill = False if self.e2e_standstill_timer > 200 else True
+        elif CS.clu_Vanz > 0:
+          self.e2e_standstill = False
+          self.e2e_standstill_stat = False
+          self.e2e_standstill_timer = 0
+        elif self.e2e_standstill_stat and self.sm['longitudinalPlan'].e2eX[12] > 30 and self.sm['longitudinalPlan'].stopLine[12] < 10 and CS.clu_Vanz == 0:
+          self.e2e_standstill = True
+          self.e2e_standstill_stat = False
+          self.e2e_standstill_timer = 0
+        elif 0 < self.sm['longitudinalPlan'].e2eX[12] < 100 and self.sm['longitudinalPlan'].stopLine[12] < 100 and CS.clu_Vanz == 0.0:
+          self.e2e_standstill_timer += 1
+          self.e2e_standstill_stat = True if self.e2e_standstill_timer > 500 else False
+
     if CS.brakeHold and not self.autohold_popup_switch:
       self.autohold_popup_timer = 100
       self.autohold_popup_switch = True
@@ -924,14 +948,22 @@ class CarController():
               elif CS.lead_distance < self.stoppingdist:
                 accel = self.accel - (DT_CTRL * interp(CS.out.vEgo, [0.0, 1.0, 2.0], [0.05, 1.0, 5.0]))
             elif aReqValue < 0.0 and self.stopping_dist_adj_enabled:
-              if lead_objspd >= 0:
-                stock_weight = interp(abs(lead_objspd), [1.0, 10.0], [0.5, 0.8])
+              ed_rd_diff = abs(self.dRel - CS.lead_distance) > 3.0
+              if ed_rd_diff and not self.ed_rd_diff_on:
+                self.ed_rd_diff_on = True
+                self.ed_rd_diff_on_timer = 400
+                stock_weight = 1.0
+              elif self.ed_rd_diff_on_timer: # damping btw ED and RD for 4 secs.
+                stock_weight = interp(self.ed_rd_diff_on_timer, [0, 400], [0.1, 1.0])
+                self.ed_rd_diff_on_timer -= 1
               else:
+                self.ed_rd_diff_on = False
+                self.ed_rd_diff_on_timer = 0
                 stock_weight = interp(abs(lead_objspd), [1.0, 4.0, 8.0, 20.0, 50.0], [0.2, 0.3, 1.0, 0.9, 0.2])
                 if aReqValue <= accel:
                   stock_weight = min(1.0, interp(CS.out.vEgo, [7.0, 30.0], [stock_weight, stock_weight*5.0]))
                 elif aReqValue > accel:
-                  stock_weight = interp(abs(lead_objspd), [1.0, 5.0, 10.0, 15.0], [0.8, 0.2, 0.8, 0.2])
+                  stock_weight = interp(abs(lead_objspd), [1.0, 10.0], [0.9, 0.1])
               accel = accel * (1.0 - stock_weight) + aReqValue * stock_weight
               accel = min(accel, -0.5) if CS.lead_distance <= 4.5 and not CS.out.standstill else accel
             elif aReqValue < 0.0:
